@@ -18,36 +18,31 @@
 */
 
 $(document).ready(function() {
-  $("form#loginForm").submit(function() {
-    var username = $('#inputName').val().toLowerCase().trim();
-    var password = $('#inputPassword').val();
-    $("#loggingIn").removeClass('hide');
-    if (username && password) {
-      var http = location.protocol;
-	  var slashes = http.concat("//");
-	  var host = slashes.concat(window.location.host);
+  $('#submitButton').click(function() {
+    var message = $('#message').val().toLowerCase().trim();
+    if (message) {
+      var timestamp = (new Date()).toISOString();
       $.ajax({
         type: "POST",
-        url: "/login",
-        contentType: "application/x-www-form-urlencoded; charset=utf-8",
-        data: "inputName=" + username + "&inputPassword=" + password,
+        url: "/entry",
+        dataType: "json",
+        data: '{\"text\": \"' + message + '\", \"timestamp\": \"' + timestamp + '\"}',
         error: function(XMLHttpRequest, textStatus, errorThrown) {
-          $('#authenticationAlert').text(XMLHttpRequest.responseText);
-          $('#authenticationAlert').removeClass('hide');
-	      $("#loggingIn").addClass('hide');
+          $('#submitAlert').text(XMLHttpRequest.responseText);
+          $('#submitAlert').removeClass('hide');
+          $('#submitAlert').removeClass('alert-success');
+          $('#submitAlert').addClass('alert-danger');
+          $('#submitAlert').html('<strong>Enable to submit</strong>');
         },
         success: function(data){
-          if (data.error) {
-          }
-          else {
-            window.location.replace(host.concat(data));
-            window.location.reload();
-          }
-	      $("#loggingIn").addClass('hide');
+          $('#submitAlert').text(XMLHttpRequest.responseText);
+          $('#submitAlert').removeClass('hide');
+          $('#submitAlert').addClass('alert-success');
+          $('#submitAlert').removeClass('alert-danger');
+          $('#submitAlert').html('<strong>Submitted:</strong>' + message);
         }
       });
     }
-    return false;
   });
 
 });

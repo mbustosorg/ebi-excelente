@@ -39,7 +39,7 @@ object EbiExcelenteData {
   val filedateFormatter = DateTimeFormat.forPattern("yyyymmddhhmmss")
 
   val db = {
-    val mysqlURL = envOrElse("EBI_MYSQL_URL", "jdbc:mysql://localhost:3306/ebiExcelente")
+    val mysqlURL = envOrElse("EBI_MYSQL_URL", "jdbc:mysql://mysql.bustos.org:3306/ebiexcelente")
     val mysqlUser = envOrElse("EBI_MYSQL_USER", "root")
     val mysqlPassword = envOrElse("EBI_MYSQL_PASSWORD", "")
     Database.forURL(mysqlURL, driver = "com.mysql.jdbc.Driver", user = mysqlUser, password = mysqlPassword)
@@ -58,6 +58,13 @@ class EbiExcelenteData extends Actor with ActorLogging {
 
   def receive = {
     case entry: Entry =>
+      try {
+        db.withSession { implicit session =>
+          entryTable += entry
+        }
+      } catch {
+        case _: Throwable => sender ! EntryFailed
+      }
       sender ! EntrySuccessful
   }
 }

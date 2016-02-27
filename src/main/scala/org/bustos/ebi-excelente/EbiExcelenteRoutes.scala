@@ -90,7 +90,8 @@ trait EbiExcelenteRoutes extends HttpService {
         val newEntry = ctx.request.entity.data.asString.parseJson.convertTo[Entry]
         val future = ebiExcelenteData ? newEntry
         future onSuccess {
-          case EntrySuccessful => ctx.complete(200, "Entry Successful")
+          case EntrySuccessful => ctx.complete(200, "{\"Entry Successful\": \"true\"}")
+          case EntryFailed => ctx.complete(500, "{\"Entry Failed\": \"true\"}")
         }
       }
     }

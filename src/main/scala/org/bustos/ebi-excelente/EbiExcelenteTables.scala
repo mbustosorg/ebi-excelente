@@ -33,6 +33,7 @@ object EbiExcelenteTables {
   case class Entry(text: String, timestamp: DateTime)
   // Utility classes
   case class EntrySuccessful()
+  case class EntryFailed()
 
   val entryTable = TableQuery[EntryTable]
 
@@ -52,9 +53,15 @@ object EbiExcelenteJsonProtocol extends DefaultJsonProtocol {
 
   implicit object DateJsonFormat extends RootJsonFormat[DateTime] {
     private val parserISO: DateTimeFormatter = ISODateTimeFormat.dateTimeNoMillis()
+    private val parserMillisISO: DateTimeFormatter = ISODateTimeFormat.dateTime()
     override def write(obj: DateTime) = JsString(parserISO.print(obj))
     override def read(json: JsValue) : DateTime = json match {
-      case JsString(s) => parserISO.parseDateTime(s)
+      case JsString(s) =>
+        try {
+          parserISO.parseDateTime(s)
+        } catch {
+          case _: Throwable => parserMillisISO.parseDateTime(s)
+        }
       case _ => throw new DeserializationException("Error info you want here ...")
     }
   }
@@ -63,14 +70,14 @@ object EbiExcelenteJsonProtocol extends DefaultJsonProtocol {
   implicit val entry = jsonFormat2(Entry)
 }
 
-class EntryTable(tag: Tag) extends Table[EbiExcelenteTables.Entry](tag, "entry") {
+class EntryTable(tag: Tag) extends Table[EbiExcelenteTables.Entry](tag, "Entry") {
 
   import EbiExcelenteTables.dateTime
 
-  def entry = column[String]("entry")
+  def text = column[String]("text")
   def timestamp = column[DateTime]("timestamp")
 
-  def * = (entry, timestamp) <> (EbiExcelenteTables.Entry.tupled, EbiExcelenteTables.Entry.unapply)
+  def * = (text, timestamp) <> (EbiExcelenteTables.Entry.tupled, EbiExcelenteTables.Entry.unapply)
 
 }
 

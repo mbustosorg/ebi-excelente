@@ -4,6 +4,7 @@
 *.log
 .DS_Store
 .idea
+application.macosx
 
 # sbt specific
 .cache

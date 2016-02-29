@@ -39,7 +39,7 @@ $(document).ready(function() {
           $('#submitAlert').removeClass('hide');
           $('#submitAlert').addClass('alert-success');
           $('#submitAlert').removeClass('alert-danger');
-          $('#submitAlert').html('<strong>Submitted:</strong>' + message);
+          $('#submitAlert').html('<strong>Submitted:  </strong>' + message);
         }
       });
     }

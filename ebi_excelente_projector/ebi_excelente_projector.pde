@@ -24,17 +24,33 @@ MySQL msql;
 int lastRefresh = millis();
 boolean updatingEntries = false;
 
-int numBalls = 45;
-float spring = 1.45;
-float gravity = 0.01;
-float friction = -0.4;
+int textRows = 15;
+int textSpacing = 40;
+int numBalls = 25;
+float spring = 1.0;
+float gravity = 0.0;
+float friction = -0.9;
 Ball[] balls = new Ball[numBalls];
 ArrayList<EntryText> entryText = new ArrayList<EntryText>();
+int lastIdSeen = 0;
+int headerWidth = 0;
+int ebiIsWidth = 0;
+int ebiIsExWidth = 0;
+int Xheight = 80;
+int TextHeight = 48;
+
+color gold = color(232, 195, 0);
+color green = color(0, 232, 87);
+color[] ebiColors = { color(0, 195, 0), color(0, 0, 195), color(195, 195, 195) };
+int[] tails = new int[textRows];
 
 void setup() {
   size(displayWidth, displayHeight);
   for (int i = 0; i < numBalls; i++) {
     balls[i] = new Ball(random(width), random(height), random(30, 70), i, balls);
+  }
+  for (int i = 0; i < textRows; i++) {
+    tails[i] = width;
   }
   noStroke();
   fill(255, 204);
@@ -45,31 +61,45 @@ void setup() {
 
   msql = new MySQL( this, "mysql.bustos.org", database, user, pass );
   updateEntries();
+  
+  textSize(TextHeight);
+  headerWidth = int(textWidth("ebi is e"));
+  ebiIsWidth = int(textWidth("ebi is e"));
+  textSize(Xheight);
+  headerWidth += textWidth("X");
+  ebiIsExWidth = headerWidth;
+  textSize(TextHeight);
+  headerWidth += textWidth("cellent because ");
 }
 
 void updateEntries() {
   if ( msql.connect() )
   {
-    msql.query( "SELECT * FROM Entry" );
+    msql.query( "SELECT * FROM Entry where id > " + str(lastIdSeen));
     if (!updatingEntries) {      
       updatingEntries = true;
-      int size = entryText.size();
-      for (int i = size - 1; i >= 0; i--) {
-        if (entryText.get(i).offScreen()) {
-          println("Removing");
-          entryText.remove(i);
-        }
-      }
       while (msql.next())
       {
         entryText.add(new EntryText(msql.getString("text")));
+        lastIdSeen = max(lastIdSeen, msql.getInt("id"));
       }
       updatingEntries = false;
     }
   }
 }
 
+void update() {
+  int size = entryText.size();
+  for (int i = size - 1; i >= 0; i--) {
+    if (entryText.get(i).offScreen()) {
+      println("Resetting " + entryText.get(i).message);
+      entryText.get(i).resetX();
+    }
+  }
+}
+
 void draw() {
+  update();
   background(0);
   if (millis() > lastRefresh + 30000) {
     lastRefresh = millis();
@@ -97,32 +127,51 @@ class EntryText {
   int index;
   int x = 0;
   int y = 0;
-  int red = 0;
-  int green = 0;
-  int blue = 0;
+  color currentColor;
+  int row = 0;
   
   EntryText(String newMessage) {
     message = newMessage;
-    textWidth = textWidth(message);
-    y = int(random(height));
-    x = int(width + random(width));
-    red = int(random(200) + 50);
-    green = int(random(200) + 50);
-    blue = int(random(200) + 50);
+    textSize(TextHeight);
+    textWidth = headerWidth + textWidth(message);
+    row = int(random(15) + 1) - 1;
+    y = int((row + 1) / 15.0 * height);
+    resetX();
+// Big gold X
+// cycle through 3 colors for the rest of the text.  Green, blue and white
+// Banner black on light grey banners behind each word
+// Banner messages
+//   ebi X
+//   be excelenet to each other
+//   sean excelentes unos con otros
+// Banner of some sort//
+  }
+  
+  void resetX() {
+    currentColor = ebiColors[int(random(3))];
+    x = max(tails[row] + textSpacing, int(width + random(width)));
+    tails[row] = x + int(textWidth);
   }
   
   void update() {
-    x -= 1;
+    x -= 4;
   }
 
   boolean offScreen() {
-    return x <= -textWidth;
+    return x <= -textWidth - headerWidth;
   }
   
   void display() {
-    textSize(48);
-    fill(red, green, blue);
-    text(message, x, y); 
+    textSize(TextHeight);
+    fill(currentColor);
+    text("ebi is e", x, y);
+    textSize(Xheight);
+    fill(gold);
+    text("X", x + ebiIsWidth, y + 15);
+    textSize(TextHeight);
+    fill(currentColor);
+    text("cellent because", x + ebiIsExWidth, y);
+    text(message, x + headerWidth, y); 
   }
   
 }
@@ -142,6 +191,8 @@ class Ball {
     diameter = din;
     id = idin;
     others = oin;
+    vx = random(0.1) - 0.1;
+    vy = random(0.1) - 0.1;
   } 
   
   void collide() {
@@ -187,7 +238,7 @@ class Ball {
   }
   
   void display() {
-    fill(100);
+    fill(40);
     ellipse(x, y, diameter, diameter);
   }
 }

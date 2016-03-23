@@ -18,15 +18,31 @@
 */
 
 $(document).ready(function() {
+
+  $('#donation').append('<option value =\"1\">$1</option>');
+  for (i = 5; i < 200; i = i + 5) {
+    $('#donation').append('<option value =\"' + i + '\">$' + i + '</option>');
+  }
+  $('#language').append('<option value=\"english\">English</option>');
+  $('#language').append('<option value=\"spanish\">Spanish</option>');
+
+  $('#language').change(function() {
+     var language = $('#language').val();
+     if (language == 'english') $('#excellent').html('is eXcellent because');
+     else $('#excellent').html('es eXcelente porque');
+  });
+
   $('#submitButton').click(function() {
     var message = $('#message').val().toLowerCase().trim();
     if (message) {
       var timestamp = (new Date()).toISOString();
+      var donation = $('#donation').val();
+      var language = $('#language').val();
       $.ajax({
         type: "POST",
         url: "/entry",
         dataType: "json",
-        data: '{\"text\": \"' + message + '\", \"timestamp\": \"' + timestamp + '\"}',
+        data: '{\"text\": \"' + message + '\", \"timestamp\": \"' + timestamp + '\", \"donation\": ' + Number(donation) + ', \"language\": \"' + language + '\"}',
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           $('#submitAlert').text(XMLHttpRequest.responseText);
           $('#submitAlert').removeClass('hide');

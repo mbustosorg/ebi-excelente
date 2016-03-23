@@ -26,18 +26,23 @@ boolean updatingEntries = false;
 
 int textRows = 15;
 int textSpacing = 40;
-int numBalls = 25;
-float spring = 1.0;
-float gravity = 0.0;
-float friction = -0.9;
-Ball[] balls = new Ball[numBalls];
+int numBalls = 1000;
+float spring = 0.1;
+float gravity = 0.9;
+float friction = -0.3;
+ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<EntryText> entryText = new ArrayList<EntryText>();
 int lastIdSeen = 0;
-int headerWidth = 0;
+int englishHeaderWidth = 0;
+int spanishHeaderWidth = 0;
 int ebiIsWidth = 0;
 int ebiIsExWidth = 0;
 int Xheight = 80;
 int TextHeight = 48;
+int BoxBoundYup = -75;
+int BoxBoundYdown = 50;
+int BoxBoundXleft = -30;
+int BoxBoundXright = 30;
 
 color gold = color(232, 195, 0);
 color green = color(0, 232, 87);
@@ -46,9 +51,6 @@ int[] tails = new int[textRows];
 
 void setup() {
   size(displayWidth, displayHeight);
-  for (int i = 0; i < numBalls; i++) {
-    balls[i] = new Ball(random(width), random(height), random(30, 70), i, balls);
-  }
   for (int i = 0; i < textRows; i++) {
     tails[i] = width;
   }
@@ -70,6 +72,7 @@ void setup() {
   ebiIsExWidth = headerWidth;
   textSize(TextHeight);
   headerWidth += textWidth("cellent because ");
+  println("headerWidth = " + headerWidth);
 }
 
 void updateEntries() {
@@ -96,6 +99,9 @@ void update() {
       entryText.get(i).resetX();
     }
   }
+  if (millis() % 10 == 0 && balls.size() < numBalls) {
+    balls.add(new Ball(width / 2, 0.0, random(-10.0, 10.0), random(2.0, 3.0), random(20, 30), balls.size() + 1, balls, entryText));
+  }  
 }
 
 void draw() {
@@ -113,6 +119,7 @@ void draw() {
   if (!updatingEntries) {
     updatingEntries = true;
     for (EntryText text : entryText) {
+      text.headerWidth = headerWidth;
       text.update();
       text.display();
     }
@@ -123,17 +130,18 @@ void draw() {
 class EntryText {
 
   String message;
-  float textWidth;
+  float thisTextWidth;
   int index;
   int x = 0;
   int y = 0;
   color currentColor;
   int row = 0;
+  int headerWidth = 0;
   
   EntryText(String newMessage) {
     message = newMessage;
     textSize(TextHeight);
-    textWidth = headerWidth + textWidth(message);
+    thisTextWidth = headerWidth + int(textWidth(message));
     row = int(random(15) + 1) - 1;
     y = int((row + 1) / 15.0 * height);
     resetX();
@@ -150,7 +158,7 @@ class EntryText {
   void resetX() {
     currentColor = ebiColors[int(random(3))];
     x = max(tails[row] + textSpacing, int(width + random(width)));
-    tails[row] = x + int(textWidth);
+    tails[row] = x + int(thisTextWidth);
   }
   
   void update() {
@@ -158,10 +166,12 @@ class EntryText {
   }
 
   boolean offScreen() {
-    return x <= -textWidth - headerWidth;
+    return x <= -thisTextWidth - headerWidth;
   }
   
   void display() {
+    fill(50);
+    //rect(x, y - 50, thisTextWidth + headerWidth, 75);
     textSize(TextHeight);
     fill(currentColor);
     text("ebi is e", x, y);
@@ -183,39 +193,52 @@ class Ball {
   float vx = 0;
   float vy = 0;
   int id;
-  Ball[] others;
+  ArrayList<Ball> others;
+  ArrayList<EntryText> texts;
  
-  Ball(float xin, float yin, float din, int idin, Ball[] oin) {
+  Ball(float xin, float yin, float vxin, float vyin, float din, int idin, ArrayList<Ball> oin, ArrayList<EntryText> textsin) {
     x = xin;
     y = yin;
+    vx = vxin;
+    vy = vyin;
     diameter = din;
     id = idin;
     others = oin;
-    vx = random(0.1) - 0.1;
-    vy = random(0.1) - 0.1;
+    texts = textsin;
+    //vx = random(0.1) - 0.1;
+    //vy = random(0.1) - 0.1;
   } 
   
   void collide() {
-    for (int i = id + 1; i < numBalls; i++) {
-      float dx = others[i].x - x;
-      float dy = others[i].y - y;
+    for (Ball other : others) {
+      float dx = other.x - x;
+      float dy = other.y - y;
       float distance = sqrt(dx*dx + dy*dy);
-      float minDist = others[i].diameter/2 + diameter/2;
+      float minDist = other.diameter/2 + diameter/2;
       if (distance < minDist) { 
         float angle = atan2(dy, dx);
         float targetX = x + cos(angle) * minDist;
         float targetY = y + sin(angle) * minDist;
-        float ax = (targetX - others[i].x) * spring;
-        float ay = (targetY - others[i].y) * spring;
+        float ax = (targetX - other.x) * spring;
+        float ay = (targetY - other.y) * spring;
         vx -= ax;
         vy -= ay;
-        others[i].vx += ax;
-        others[i].vy += ay;
+        other.vx += ax;
+        other.vy += ay;
       }
-    }   
+    }
   }
   
   void move() {
+    for (EntryText text : texts) {
+      if (x > text.x + BoxBoundXleft && x < text.x + text.thisTextWidth + text.headerWidth + BoxBoundXright && 
+          y > text.y + BoxBoundYup && y < text.y + BoxBoundYdown) {
+        if (x < text.x) { x = text.x + BoxBoundXleft; vx = -vx; }
+         else if (x > (text.x + text.thisTextWidth + text.headerWidth)) { x = text.x + text.thisTextWidth + text.headerWidth + BoxBoundXright; vx = -vx; }
+        else if (y < text.y) { y = text.y + BoxBoundYup; vy = -vy;}
+        else { y = text.y + BoxBoundYdown; vy = -vy; }
+      } 
+    }   
     vy += gravity;
     x += vx;
     y += vy;
@@ -238,8 +261,11 @@ class Ball {
   }
   
   void display() {
-    fill(40);
+    fill(50);
     ellipse(x, y, diameter, diameter);
+    stroke(150);
+    //line(x, y, x - vx * 10, y - vy * 10);
+    noStroke();
   }
 }
 

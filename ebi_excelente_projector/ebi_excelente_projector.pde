@@ -73,7 +73,7 @@ void updateEntries() {
       updatingEntries = true;
       while (msql.next())
       {
-        int donation = min(10, int(msql.getInt("donation") / 200 * 10));
+        int donation = min(10, int(float(msql.getInt("donation")) / 200 * 10));
         entryText.add(new EntryText(msql.getString("subject"), msql.getString("adjective"), msql.getString("language"), messageSizes[donation]));
         lastIdSeen = max(lastIdSeen, msql.getInt("id"));
       }
@@ -132,47 +132,49 @@ class MessageSize {
     textSize = int(48 * slot / 10) + 20;
     Xheight = int(80 * slot / 10) + 20;
     textSize(textSize);
-    englishEbiIsWidth = int(textWidth("is e"));
+    englishEbiIsWidth = int(textWidth(" is e"));
     textSize(Xheight);
-    englishHeaderWidth += textWidth("X");
+    englishHeaderWidth = englishEbiIsWidth + int(textWidth("X"));
     englishEbiIsExWidth = englishHeaderWidth;
     textSize(textSize);
-    englishHeaderWidth += textWidth("cellent because ");
+    englishHeaderWidth += int(textWidth(" cellent because"));
     println(slot + " english headerWidth = " + englishHeaderWidth);
     textSize(textSize);
-    spanishEbiIsWidth = int(textWidth("es e"));
+    spanishEbiIsWidth = int(textWidth(" es e"));
     textSize(Xheight);
-    spanishHeaderWidth += textWidth("X");
+    spanishHeaderWidth = spanishEbiIsWidth + int(textWidth("X"));
     spanishEbiIsExWidth = spanishHeaderWidth;
     textSize(textSize);
-    spanishHeaderWidth += textWidth("cellente porque ");
+    spanishHeaderWidth += int(textWidth(" cellente porque"));
     println(slot + " spanish headerWidth = " + spanishHeaderWidth);
   }
   
   int width(String language) {
-    if (language == "english") return englishHeaderWidth;
+    if (language.equals("english")) return englishHeaderWidth;
     else return spanishHeaderWidth;
   }
   
   void draw(String language, int x, int y, color currentColor) {
-    if (language == "english") {
+    if (language.equals("english")) {
+      fill(currentColor);
       textSize(textSize);    
       text(" is e", x, y);
       textSize(Xheight);
       fill(gold);
-      text("X", x + englishEbiIsWidth, y + 15);
+      text("X", x + englishEbiIsWidth, y + slot);
       textSize(textSize);
       fill(currentColor);
-      text("cellent because", x + englishEbiIsExWidth, y);
+      text(" cellent because ", x + englishEbiIsExWidth, y);
     } else {
+      fill(currentColor);
       textSize(textSize);    
-      text(" is e", x, y);
+      text(" es e", x, y);
       textSize(Xheight);
       fill(gold);
-      text("X", x + spanishEbiIsWidth, y + 15);
+      text("X", x + spanishEbiIsWidth, y + slot);
       textSize(textSize);
       fill(currentColor);
-      text("cellent because", x + englishEbiIsExWidth, y);
+      text(" cellente porque ", x + englishEbiIsExWidth, y);
     }
   }
 }

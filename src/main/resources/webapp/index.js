@@ -44,12 +44,25 @@ $(document).ready(function() {
                     '<td>' + currentEntry.subject + '</td>' +
                     '<td>' + currentEntry.adjective + '</td>' +
                     '<td>' + currentEntry.language + '</td>' +
-                    '<td>' + currentEntry.donation + '</td>' +
-                    '<td>$' + currentEntry.timestamp + '</td>' +
+                    '<td style="text-align: right">$' + currentEntry.donation + '</td>' +
+                    '<td style="text-align: right">' + formatTimestamp(new Date(currentEntry.timestamp)) + '</td>' +
                     '</tr>'
                 );
             });
         });
+  };
+
+  function formatTimestamp(timestamp) {
+      var hours = timestamp.getHours();
+      var minutes = timestamp.getMinutes();
+      var ampm = " AM";
+      if (hours > 12) {
+         hours -= 12;
+         if (hours == 0) hours = 12;
+         ampm = " PM";
+      }
+      if (minutes < 10) minutes = "0" + minutes;
+      return hours + ":" + minutes + ampm;
   };
 
   $('#submitButton').click(function() {

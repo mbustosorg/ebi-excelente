@@ -59,7 +59,7 @@ trait EbiExcelenteRoutes extends HttpService {
 
   val ebiExcelenteData = system.actorOf(Props[EbiExcelenteData], "ebiExcelenteData")
 
-  val routes = postEntry
+  val routes = postEntry ~ getEntries
 
   def redirectToHttps: Directive0 = {
     requestUri.flatMap { uri =>
@@ -92,6 +92,17 @@ trait EbiExcelenteRoutes extends HttpService {
         future onSuccess {
           case EntrySuccessful => ctx.complete(200, "{\"Entry Successful\": \"true\"}")
           case EntryFailed => ctx.complete(500, "{\"Entry Failed\": \"true\"}")
+        }
+      }
+    }
+  }
+
+  def getEntries = get {
+    path("entries") {
+      respondWithMediaType(`application/json`) { ctx =>
+        val future = ebiExcelenteData ? EntriesRequest
+        future onSuccess {
+          case Entries(entries) => ctx.complete(entries.toJson.toString)
         }
       }
     }

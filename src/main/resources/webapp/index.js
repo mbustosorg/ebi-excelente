@@ -32,9 +32,30 @@ $(document).ready(function() {
      else $('#excellent').html('es eXcelente porque');
   });
 
+  function listEntries() {
+        $.ajax({
+            url: '/entries',
+            cache: false
+        }).done (function (entries) {
+            $('tbody#entry_table_body').empty();
+            $.each(entries, function(key, currentEntry) {
+                $('#entry_table_body').append(
+                    '<tr id="entry' + currentEntry.timestamp + '">' +
+                    '<td>' + currentEntry.subject + '</td>' +
+                    '<td>' + currentEntry.adjective + '</td>' +
+                    '<td>' + currentEntry.language + '</td>' +
+                    '<td>' + currentEntry.donation + '</td>' +
+                    '<td>$' + currentEntry.timestamp + '</td>' +
+                    '</tr>'
+                );
+            });
+        });
+  };
+
   $('#submitButton').click(function() {
-    var message = $('#message').val().toLowerCase().trim();
-    if (message) {
+    var subject = $('#subject').val().toLowerCase().trim();
+    var adjective = $('#adjective').val().toLowerCase().trim();
+    if (subject && adjective) {
       var timestamp = (new Date()).toISOString();
       var donation = $('#donation').val();
       var language = $('#language').val();
@@ -42,23 +63,25 @@ $(document).ready(function() {
         type: "POST",
         url: "/entry",
         dataType: "json",
-        data: '{\"text\": \"' + message + '\", \"timestamp\": \"' + timestamp + '\", \"donation\": ' + Number(donation) + ', \"language\": \"' + language + '\"}',
+        data: '{\"subject\": \"' + subject + '\", \"adjective\": \"' + adjective + '\", \"timestamp\": \"' + timestamp + '\", \"donation\": ' + Number(donation) + ', \"language\": \"' + language + '\"}',
         error: function(XMLHttpRequest, textStatus, errorThrown) {
           $('#submitAlert').text(XMLHttpRequest.responseText);
           $('#submitAlert').removeClass('hide');
           $('#submitAlert').removeClass('alert-success');
           $('#submitAlert').addClass('alert-danger');
-          $('#submitAlert').html('<strong>Enable to submit</strong>');
+          $('#submitAlert').html('<strong>Unable to submit, please retry.</strong>');
         },
         success: function(data){
           $('#submitAlert').text(XMLHttpRequest.responseText);
           $('#submitAlert').removeClass('hide');
           $('#submitAlert').addClass('alert-success');
           $('#submitAlert').removeClass('alert-danger');
-          $('#submitAlert').html('<strong>Submitted:  </strong>' + message);
+          $('#submitAlert').html('<strong>Submitted: </strong> ' + subject + ' : ' + adjective);
+          listEntries();
         }
       });
     }
   });
 
+  listEntries();
 });

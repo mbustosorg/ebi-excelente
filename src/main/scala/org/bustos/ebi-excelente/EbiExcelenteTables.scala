@@ -30,8 +30,10 @@ import spray.json._
 object EbiExcelenteTables {
 
   // Base case classes
-  case class Entry(text: String, timestamp: DateTime, language: String, donation: Float)
+  case class Entry(subject: String, adjective: String, timestamp: DateTime, language: String, donation: Float)
+  case class EntriesRequest()
   // Utility classes
+  case class Entries(entries: List[Entry])
   case class EntrySuccessful()
   case class EntryFailed()
 
@@ -67,19 +69,20 @@ object EbiExcelenteJsonProtocol extends DefaultJsonProtocol {
   }
 
   // Base case classes
-  implicit val entry = jsonFormat4(Entry)
+  implicit val entry = jsonFormat5(Entry)
 }
 
 class EntryTable(tag: Tag) extends Table[EbiExcelenteTables.Entry](tag, "Entry") {
 
   import EbiExcelenteTables.dateTime
 
-  def text = column[String]("text")
+  def subject = column[String]("subject")
+  def adjective = column[String]("adjective")
   def timestamp = column[DateTime]("timestamp")
   def language = column[String]("language")
   def donation = column[Float]("donation")
 
-  def * = (text, timestamp, language, donation) <> (EbiExcelenteTables.Entry.tupled, EbiExcelenteTables.Entry.unapply)
+  def * = (subject, adjective, timestamp, language, donation) <> (EbiExcelenteTables.Entry.tupled, EbiExcelenteTables.Entry.unapply)
 
 }
 

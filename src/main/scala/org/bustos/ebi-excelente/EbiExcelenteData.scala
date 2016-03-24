@@ -66,5 +66,10 @@ class EbiExcelenteData extends Actor with ActorLogging {
         case _: Throwable => sender ! EntryFailed
       }
       sender ! EntrySuccessful
+    case EntriesRequest =>
+      val entries = db.withSession { implicit session =>
+        entryTable.sortBy(_.timestamp.desc).list
+      }
+      sender ! Entries(entries)
   }
 }

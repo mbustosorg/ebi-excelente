@@ -25,6 +25,7 @@ int lastRefresh = millis();
 boolean updatingEntries = false;
 
 int textRows = 15;
+int SlotCount = 10;
 int textSpacing = 40;
 int numBalls = 1000;
 float spring = 0.1;
@@ -32,13 +33,8 @@ float gravity = 0.9;
 float friction = -0.3;
 ArrayList<Ball> balls = new ArrayList<Ball>();
 ArrayList<EntryText> entryText = new ArrayList<EntryText>();
+MessageSize[] messageSizes = new MessageSize[SlotCount];
 int lastIdSeen = 0;
-int englishHeaderWidth = 0;
-int spanishHeaderWidth = 0;
-int ebiIsWidth = 0;
-int ebiIsExWidth = 0;
-int Xheight = 80;
-int TextHeight = 48;
 int BoxBoundYup = -75;
 int BoxBoundYdown = 50;
 int BoxBoundXleft = -30;
@@ -54,6 +50,9 @@ void setup() {
   for (int i = 0; i < textRows; i++) {
     tails[i] = width;
   }
+  for (int i = 0; i < SlotCount; i++) {
+    messageSizes[i] = new MessageSize(i + 1);
+  }
   noStroke();
   fill(255, 204);
      
@@ -64,15 +63,6 @@ void setup() {
   msql = new MySQL( this, "mysql.bustos.org", database, user, pass );
   updateEntries();
   
-  textSize(TextHeight);
-  headerWidth = int(textWidth("ebi is e"));
-  ebiIsWidth = int(textWidth("ebi is e"));
-  textSize(Xheight);
-  headerWidth += textWidth("X");
-  ebiIsExWidth = headerWidth;
-  textSize(TextHeight);
-  headerWidth += textWidth("cellent because ");
-  println("headerWidth = " + headerWidth);
 }
 
 void updateEntries() {
@@ -83,7 +73,8 @@ void updateEntries() {
       updatingEntries = true;
       while (msql.next())
       {
-        entryText.add(new EntryText(msql.getString("text")));
+        int donation = min(10, int(msql.getInt("donation") / 200 * 10));
+        entryText.add(new EntryText(msql.getString("subject"), msql.getString("adjective"), msql.getString("language"), messageSizes[donation]));
         lastIdSeen = max(lastIdSeen, msql.getInt("id"));
       }
       updatingEntries = false;
@@ -92,11 +83,10 @@ void updateEntries() {
 }
 
 void update() {
-  int size = entryText.size();
-  for (int i = size - 1; i >= 0; i--) {
-    if (entryText.get(i).offScreen()) {
-      println("Resetting " + entryText.get(i).message);
-      entryText.get(i).resetX();
+  for (EntryText text : entryText) {
+    if (text.offScreen()) {
+      println("Resetting " + text.subject + " : " + text.adjective);
+      text.resetX();
     }
   }
   if (millis() % 10 == 0 && balls.size() < numBalls) {
@@ -119,7 +109,6 @@ void draw() {
   if (!updatingEntries) {
     updatingEntries = true;
     for (EntryText text : entryText) {
-      text.headerWidth = headerWidth;
       text.update();
       text.display();
     }
@@ -127,21 +116,88 @@ void draw() {
   }
 }
 
+class MessageSize {
+  int slot = 0;
+  int englishHeaderWidth = 0;
+  int spanishHeaderWidth = 0;
+  int englishEbiIsWidth = 0;
+  int spanishEbiIsWidth = 0;
+  int englishEbiIsExWidth = 0;
+  int spanishEbiIsExWidth = 0;
+  int textSize = 0;
+  int Xheight = 0;
+
+  MessageSize(int slotIn) {
+    slot = slotIn;
+    textSize = int(48 * slot / 10) + 20;
+    Xheight = int(80 * slot / 10) + 20;
+    textSize(textSize);
+    englishEbiIsWidth = int(textWidth("is e"));
+    textSize(Xheight);
+    englishHeaderWidth += textWidth("X");
+    englishEbiIsExWidth = englishHeaderWidth;
+    textSize(textSize);
+    englishHeaderWidth += textWidth("cellent because ");
+    println(slot + " english headerWidth = " + englishHeaderWidth);
+    textSize(textSize);
+    spanishEbiIsWidth = int(textWidth("es e"));
+    textSize(Xheight);
+    spanishHeaderWidth += textWidth("X");
+    spanishEbiIsExWidth = spanishHeaderWidth;
+    textSize(textSize);
+    spanishHeaderWidth += textWidth("cellente porque ");
+    println(slot + " spanish headerWidth = " + spanishHeaderWidth);
+  }
+  
+  int width(String language) {
+    if (language == "english") return englishHeaderWidth;
+    else return spanishHeaderWidth;
+  }
+  
+  void draw(String language, int x, int y, color currentColor) {
+    if (language == "english") {
+      textSize(textSize);    
+      text(" is e", x, y);
+      textSize(Xheight);
+      fill(gold);
+      text("X", x + englishEbiIsWidth, y + 15);
+      textSize(textSize);
+      fill(currentColor);
+      text("cellent because", x + englishEbiIsExWidth, y);
+    } else {
+      textSize(textSize);    
+      text(" is e", x, y);
+      textSize(Xheight);
+      fill(gold);
+      text("X", x + spanishEbiIsWidth, y + 15);
+      textSize(textSize);
+      fill(currentColor);
+      text("cellent because", x + englishEbiIsExWidth, y);
+    }
+  }
+}
+
 class EntryText {
 
-  String message;
-  float thisTextWidth;
+  String subject, adjective;
+  int subjectWidth, adjectiveWidth, totalWidth;
+  MessageSize messageSize;
+  String language;
   int index;
   int x = 0;
   int y = 0;
   color currentColor;
   int row = 0;
-  int headerWidth = 0;
   
-  EntryText(String newMessage) {
-    message = newMessage;
-    textSize(TextHeight);
-    thisTextWidth = headerWidth + int(textWidth(message));
+  EntryText(String subjectIn, String adjectiveIn, String languageIn, MessageSize messageSizeIn) {
+    subject = subjectIn;
+    adjective = adjectiveIn;
+    language = languageIn;
+    messageSize = messageSizeIn;
+    textSize(messageSize.textSize);
+    subjectWidth = int(textWidth(subject));
+    adjectiveWidth = int(textWidth(adjective));
+    totalWidth = subjectWidth + messageSize.width(language) + adjectiveWidth;
     row = int(random(15) + 1) - 1;
     y = int((row + 1) / 15.0 * height);
     resetX();
@@ -158,7 +214,7 @@ class EntryText {
   void resetX() {
     currentColor = ebiColors[int(random(3))];
     x = max(tails[row] + textSpacing, int(width + random(width)));
-    tails[row] = x + int(thisTextWidth);
+    tails[row] = x + int(totalWidth);
   }
   
   void update() {
@@ -166,22 +222,19 @@ class EntryText {
   }
 
   boolean offScreen() {
-    return x <= -thisTextWidth - headerWidth;
+    return x <= -totalWidth;
   }
   
   void display() {
     fill(50);
     //rect(x, y - 50, thisTextWidth + headerWidth, 75);
-    textSize(TextHeight);
+    textSize(messageSize.textSize);
     fill(currentColor);
-    text("ebi is e", x, y);
-    textSize(Xheight);
-    fill(gold);
-    text("X", x + ebiIsWidth, y + 15);
-    textSize(TextHeight);
+    text(subject, x, y);
+    messageSize.draw(language, x + subjectWidth, y, currentColor);
+    textSize(messageSize.textSize);
     fill(currentColor);
-    text("cellent because", x + ebiIsExWidth, y);
-    text(message, x + headerWidth, y); 
+    text(adjective, x + subjectWidth + messageSize.width(language), y);
   }
   
 }
@@ -231,10 +284,10 @@ class Ball {
   
   void move() {
     for (EntryText text : texts) {
-      if (x > text.x + BoxBoundXleft && x < text.x + text.thisTextWidth + text.headerWidth + BoxBoundXright && 
+      if (x > text.x + BoxBoundXleft && x < text.x + text.totalWidth + BoxBoundXright && 
           y > text.y + BoxBoundYup && y < text.y + BoxBoundYdown) {
         if (x < text.x) { x = text.x + BoxBoundXleft; vx = -vx; }
-         else if (x > (text.x + text.thisTextWidth + text.headerWidth)) { x = text.x + text.thisTextWidth + text.headerWidth + BoxBoundXright; vx = -vx; }
+         else if (x > (text.x + text.totalWidth)) { x = text.x + text.totalWidth + BoxBoundXright; vx = -vx; }
         else if (y < text.y) { y = text.y + BoxBoundYup; vy = -vy;}
         else { y = text.y + BoxBoundYdown; vy = -vy; }
       } 

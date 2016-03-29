@@ -5,6 +5,7 @@
 .DS_Store
 .idea
 application.macosx
+ebi_excelente_projector/
 
 # sbt specific
 .cache

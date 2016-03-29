@@ -32,6 +32,7 @@ object EbiExcelenteTables {
   // Base case classes
   case class Entry(subject: String, adjective: String, timestamp: DateTime, language: String, donation: Float)
   case class EntriesRequest()
+  case class ClearEntries()
   // Utility classes
   case class Entries(entries: List[Entry])
   case class EntrySuccessful()

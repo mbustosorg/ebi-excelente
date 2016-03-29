@@ -71,5 +71,9 @@ class EbiExcelenteData extends Actor with ActorLogging {
         entryTable.sortBy(_.timestamp.desc).list
       }
       sender ! Entries(entries)
+    case ClearEntries =>
+      db.withSession { implicit session =>
+        entryTable.delete
+      }
   }
 }

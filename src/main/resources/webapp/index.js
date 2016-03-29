@@ -19,10 +19,9 @@
 
 $(document).ready(function() {
 
-  $('#donation').append('<option value =\"1\">$1</option>');
-  for (i = 5; i < 200; i = i + 5) {
-    $('#donation').append('<option value =\"' + i + '\">$' + i + '</option>');
-  }
+  $('#donation').append('<option value =\"20\">$20</option>');
+  $('#donation').append('<option value =\"50\">$50</option>');
+  $('#donation').append('<option value =\"100\">$100</option>');
   $('#language').append('<option value=\"english\">English</option>');
   $('#language').append('<option value=\"spanish\">Spanish</option>');
 

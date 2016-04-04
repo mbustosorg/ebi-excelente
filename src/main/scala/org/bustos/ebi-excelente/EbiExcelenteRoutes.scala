@@ -19,20 +19,18 @@
 
 package org.bustos.ebiexcelente
 
-import javax.ws.rs.Path
-
 import akka.actor._
 import akka.pattern.ask
-import scala.concurrent.duration._
 import akka.util.Timeout
 import org.bustos.ebiexcelente.EbiExcelenteJsonProtocol._
 import org.bustos.ebiexcelente.EbiExcelenteTables._
 import org.slf4j.LoggerFactory
 import spray.http.MediaTypes._
 import spray.http.StatusCodes._
-import spray.http.{DateTime, HttpCookie}
 import spray.json._
 import spray.routing._
+
+import scala.concurrent.duration._
 
 class EbiExcelenteServiceActor extends HttpServiceActor with ActorLogging {
 

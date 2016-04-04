@@ -58,9 +58,9 @@ void setup() {
   String pass     = "tnnq656544gh";
   String database = "ebiexcelente";
 
-  textSizeMap.put(20, new MessageSize(20));
-  textSizeMap.put(50, new MessageSize(50));
-  textSizeMap.put(100, new MessageSize(100));
+  textSizeMap.put(5, new MessageSize(20));
+  textSizeMap.put(20, new MessageSize(50));
+  textSizeMap.put(50, new MessageSize(100));
 
   msql = new MySQL( this, "mysql.bustos.org", database, user, pass );
   updateEntries();  

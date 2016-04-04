@@ -6,6 +6,7 @@
 .idea
 application.macosx
 ebi_excelente_projector/
+*.zip
 
 # sbt specific
 .cache

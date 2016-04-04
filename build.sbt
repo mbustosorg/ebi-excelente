@@ -28,6 +28,7 @@ val projectLibraries = Seq(
     "io.spray"                %% "spray-json"      % "1.3.1",
     "com.typesafe.akka"       %% "akka-actor"      % akkaV,
     "com.typesafe.akka"       %% "akka-testkit"    % akkaV   % "test",
+    "com.typesafe.akka"       %% "akka-slf4j"      % akkaV,
     "org.slf4j"               %  "slf4j-api"       % "1.7.10",
     "ch.qos.logback"          %  "logback-classic" % "1.1.3",
     "com.typesafe.slick"      %% "slick"           % "2.1.0",

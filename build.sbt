@@ -28,19 +28,14 @@ val projectLibraries = Seq(
     "io.spray"                %% "spray-json"      % "1.3.1",
     "com.typesafe.akka"       %% "akka-actor"      % akkaV,
     "com.typesafe.akka"       %% "akka-testkit"    % akkaV   % "test",
+    "org.slf4j"               %  "slf4j-api"       % "1.7.10",
+    "ch.qos.logback"          %  "logback-classic" % "1.1.3",
     "com.typesafe.slick"      %% "slick"           % "2.1.0",
-    "org.seleniumhq.selenium" %  "selenium-java"   % "2.35.0",
     "org.scalatest"           %% "scalatest"       % "2.1.6",
     "org.specs2"              %% "specs2-core"     % "2.3.11" % "test",
-    "com.wandoulabs.akka"     %% "spray-websocket" % "0.1.3",
-    "com.gettyimages"         %% "spray-swagger"   % "0.5.0",
-    "log4j"                   %  "log4j"           % "1.2.14",
-    "org.slf4j"               %  "slf4j-api"       % slf4jV,
-    "org.slf4j"               %  "slf4j-simple"    % slf4jV,
     "mysql"                   %  "mysql-connector-java" % "latest.release",
     "joda-time"               %  "joda-time"       % "2.7",
-    "org.joda"                %  "joda-convert"    % "1.2",
-    "com.github.tototoshi"    %% "scala-csv"       % "1.2.2"
+    "org.joda"                %  "joda-convert"    % "1.2"
 )
 
 Revolver.settings

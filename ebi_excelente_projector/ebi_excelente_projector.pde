@@ -85,7 +85,6 @@ void updateEntries() {
 void update() {
   for (EntryText text : entryText) {
     if (text.offScreen()) {
-      println("Resetting " + text.subject + " : " + text.adjective);
       text.resetX();
     }
   }
@@ -198,18 +197,23 @@ class EntryText {
     adjectiveWidth = int(textWidth(adjective));
     totalWidth = subjectWidth + messageSize.width(language) + adjectiveWidth;
     row = int(random(15) + 1) - 1;
-    y = int((row + 1) / 15.0 * height);
+    y = int((row + 1) / 15.0 * (height - 20));
     resetX();
   }
   
   void resetX() {
+    x = width;
+    for (EntryText text : entryText) {
+      if (text.row == row) x = max(x, text.x + text.totalWidth + textSpacing);
+    }
     currentColor = ebiColors[int(random(3))];
-    x = max(tails[row] + textSpacing, int(width + random(width)));
-    tails[row] = x + int(totalWidth);
+    //x = max(tails[row] + textSpacing, int(width + random(width)));
+    //tails[row] = x + int(totalWidth);
+    println("Resetting '" + subject + " : " + adjective + "' to " + x);
   }
   
   void update() {
-    x -= entryText.size() / 6;
+    x -= max(1, entryText.size() / 6);
   }
 
   boolean offScreen() {
